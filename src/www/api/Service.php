@@ -96,6 +96,8 @@ abstract class Service {
     protected abstract function CheckParameters();
 
     // HTTP Methods
+    // By default, all of them will return a 405, each service will have to
+    // declare its own functions
     public function GET(): void
     {
         ApiLib::WriteErrorResponse(405, "Method GET is not allowed.");
