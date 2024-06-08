@@ -6,9 +6,6 @@ use api\Service;
 use libs\ApiLib;
 use libs\SortLib;
 
-/** Service for array sorting
- *
- */
 class SortService extends Service {
 
     public function __construct($allowed_verbs=["GET"])
@@ -19,10 +16,7 @@ class SortService extends Service {
         parent::__construct($allowed_verbs);
     }
 
-    /**
-     * @return void
-     */
-    public function SetParameters(): void
+    protected function SetParameters(): void
     {
         parent::SetParameters();
         // Retrieves the endpoint name (.../{endpoint}/index.php)
@@ -34,7 +28,7 @@ class SortService extends Service {
     /** Additional parameter check for custom parameters set in SortService::SetParameters
      * @return void
      */
-    public function CheckParameters()
+    protected function CheckParameters(): void
     {
         // La méthode associée à l'endpoint n'existe pas
         if (!method_exists(SortLib::class, $this->paramValues->sortFunc)) {
@@ -46,34 +40,17 @@ class SortService extends Service {
         }
     }
 
-    /**
-     * @return void
-     */
-    public function GET(){
+    public function GET(): void
+    {
         // Trie l'array avec la fonction associée à l'endpoint
         $sortedArr = SortLib::{$this->paramValues->sortFunc}($this->paramValues->arr);
         // Ecrit le json de la réponse et l'envoie
         ApiLib::WriteResponse(array("sort_function"=>$this->paramValues->sortFunc, "sorted_arr"=>$sortedArr));
     }
 
-    /**
-     * @return void
-     */
     public function POST(){}
-
-    /**
-     * @return void
-     */
     public function PUT(){}
-
-    /**
-     * @return void
-     */
     public function DELETE(){}
-
-    /**
-     * @return void
-     */
     public function PATCH(){}
 
 }

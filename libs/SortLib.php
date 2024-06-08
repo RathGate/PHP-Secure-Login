@@ -6,12 +6,9 @@ namespace libs;
  * Contains static sorting methods.
  */
 class SortLib {
-    /** Sorts and returns an array with insertion sorting algorithm.
-     * https://en.wikipedia.org/wiki/Insertion_sort
-     * @param $arr .array to be sorted
-     * @return array|false sorted array if `$arr` parameter is valid, else `false`.
-     */
-    static function InsertionSort($arr){
+    // Sorts and returns an array with insertion sorting algorithm.
+    static function InsertionSort($arr): false|array
+    {
         // Type error check
         if (!is_array($arr)) {
             return false;
@@ -30,12 +27,9 @@ class SortLib {
         return $arr;
     }
 
-    /** Sorts and returns an array with bubble sort sorting algorithm.
-     * https://en.wikipedia.org/wiki/Bubble_sort
-     * @param $arr .array to be sorted
-     * @return array|false sorted array if `$arr` parameter is valid, else `false`.
-     */
-    static function BubbleSort($arr) {
+    // Sorts and returns an array with bubble sort sorting algorithm.
+    static function BubbleSort($arr): false|array
+    {
         if (!is_array($arr)) {
             return false;
         }
@@ -57,12 +51,8 @@ class SortLib {
         return $arr;
     }
 
-    /** Sorts and returns an array with quicksort sorting algorithm.
-     * https://en.wikipedia.org/wiki/Quicksort
-     * @param $arr .array to be sorted
-     * @return array|false sorted array if `$arr` parameter is valid, else `false`.
-     */
-    static function QuickSort($arr)
+    // Sorts and returns an array with quicksort sorting algorithm.
+    static function QuickSort($arr) : false|array
     {
         if (!is_array($arr)) {
             return false;

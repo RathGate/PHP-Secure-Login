@@ -6,15 +6,15 @@ use security\Credentials;
 
 class Connection
 {
-    public static $required_creds = ["username", "password", "host", "port"];
-    public $dbname;
-    public $dbh;
+    public static array $required_creds = ["username", "password", "host", "port"];
+    public string $dbname;
+    public \PDO $dbh;
 
     function __construct(Credentials $credentials=NULL) {
         if (!isset($credentials)) {
             $credentials = new Credentials();
         }
-        if (!self::IsValidCredentials($credentials)) {
+        if (!Credentials::IsValidCredentials($credentials, self::$required_creds)) {
             throw new \InvalidArgumentException("Les paramètres ".json_encode(self::$required_creds)
                 ." sont obligatoires pour une connexion à la base de données.");
         }
@@ -38,15 +38,5 @@ class Connection
         }
 
         return new \PDO($dsn, $credentials->username, $credentials->password);
-    }
-
-    static function IsValidCredentials(Credentials $credentials): bool
-    {
-        foreach (self::$required_creds as $required_cred) {
-            if (!property_exists($credentials, $required_cred)) {
-                return false;
-            }
-        }
-        return true;
     }
 }

@@ -1,7 +1,8 @@
 <?php
 
 spl_autoload_register( 'autoloader' );
-function autoloader($class) {
+function autoloader($class): void
+{
     // Remplace les \ du namespace pour convertir en chemin relatif
     $class_path = str_replace('\\', '/', $class);
 

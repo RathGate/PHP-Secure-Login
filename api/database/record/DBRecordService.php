@@ -29,7 +29,7 @@ class DBRecordService extends DatabaseService {
     }
 
     // Renvoie l'erreur en réponse et termine le script si un paramètre est invalide.
-    public function CheckParameters()
+    public function CheckParameters(): void
     {
         if (!$this->database->connection->dbname) {
             ApiLib::WriteErrorResponse(
@@ -39,7 +39,7 @@ class DBRecordService extends DatabaseService {
         }
     }
 
-    public function GET()
+    public function GET(): void
     {
         try {
             $data = $this->database->SelectRecord($this->paramValues->columns, $this->paramValues->table, $this->paramValues->where);
@@ -57,7 +57,8 @@ class DBRecordService extends DatabaseService {
         }
 
     }
-    public function POST(){
+    public function POST(): void
+    {
         try {
             $last_inserted_id = $this->database->AddRecord($this->paramValues->table, $this->paramValues->values);
             ApiLib::WriteResponse(
@@ -75,7 +76,8 @@ class DBRecordService extends DatabaseService {
             );
         }
     }
-    public function PUT(){
+    public function PUT(): void
+    {
         try {
             $affected_rows = $this->database->UpdateRecord($this->paramValues->table, $this->paramValues->values, $this->paramValues->where);
             ApiLib::WriteResponse(
@@ -93,7 +95,8 @@ class DBRecordService extends DatabaseService {
             );
         }
     }
-    public function DELETE(){
+    public function DELETE(): void
+    {
         try {
             $affected_rows = $this->database->DeleteRecord($this->paramValues->table, $this->paramValues->where);
             ApiLib::WriteResponse(
@@ -112,11 +115,4 @@ class DBRecordService extends DatabaseService {
         }
     }
 
-    /**
-     * @return void
-     */
-    public function PATCH()
-    {
-        // TODO: Implement PATCH() method.
-    }
 }

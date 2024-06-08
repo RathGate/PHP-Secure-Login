@@ -2,20 +2,13 @@
 
 namespace libs;
 
-/**
- * Contains all static methods relative to the API
- */
+// Contains all static methods relative to the API
 class ApiLib
 {
 
     // Write and sends JSON formated error response.
-    /**
-     * @param int $code HTTP response code
-     * @param string $message Error message
-     * @param bool $exitWhenDone If true, exits the program after sending the response.
-     * @return void
-     */
-    static function WriteErrorResponse(int $code, string $message, bool $exitWhenDone=true) {
+    static function WriteErrorResponse(int $code, string $message, bool $exitWhenDone=true): void
+    {
         // Sets the HTTP response code.
         http_response_code($code);
 
@@ -30,12 +23,8 @@ class ApiLib
 
     // Ecrit et envoie le JSON d'une requête valide.
     // Termine l'exécution du script si $exitWhenDone est true.
-    /**
-     * @param array|string $data
-     * @param bool $exitWhenDone
-     * @return void
-     */
-    static function WriteResponse($data, bool $exitWhenDone=true) {
+    static function WriteResponse($data, bool $exitWhenDone=true): void
+    {
         // Sets the HTTP response code.
         header('Content-Type: application/json');
 

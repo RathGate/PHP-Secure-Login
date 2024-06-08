@@ -9,25 +9,16 @@ use stdClass;
  */
 class Credentials
 {
-    /** Name of the service (and therefore name of the file without .json extension)
-     * used to create the credentials.
-     * @var
-     */
-    private static $default_service = "database";
-    public $service_name;
+    // Name of the service (and therefore name of the file without .json extension)
+    // used to create the credentials.
+    private static string $default_service = "database";
+    public string $service_name;
 
-    /** Class constructor
-     * @param string|null $service_name
-     */
     function __construct(?string $service_name="")
     {
         $this::SetParameters($service_name);
     }
 
-    /**
-     * @param string|null $service_name
-     * @return void
-     */
     public function SetParameters(?string $service_name):void {
         // Sets the service name (uses $default_service if none)
         if (!isset($service_name) || $service_name == "") {
@@ -44,5 +35,15 @@ class Credentials
         foreach ($json_data as $key => $value) {
             $this->$key = $value;
         }
+    }
+
+    static function IsValidCredentials(Credentials $credentials, array $required_creds): bool
+    {
+        foreach ($required_creds as $required_cred) {
+            if (!property_exists($credentials, $required_cred)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

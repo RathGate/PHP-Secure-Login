@@ -9,33 +9,22 @@ use PDO;
 use security\Credentials;
 use libs\FormatLib;
 
-/**
- * Contains all methods relative to database manipulation.
- */
+// Database manipulation class
 class Database
 {
-    /**
-     * @var Connection
-     */
-    public $connection;
-    public static $comparison_op = [
+    public Connection $connection;
+    public static array $comparison_op = [
         "=", "<>", "!=", "<", ">", "<=", ">=", "LIKE", "IN", "BETWEEN", "IS NULL", "IS NOT NULL",
     ];
 
-    /** Class constructor
-     * @param Credentials|NULL $credentials if null, will generate new credentials with the class default values.
-     */
+    // If $credentials is null, will generate new credentials with the class default values.
     function __construct(Credentials $credentials = NULL)
     {
         // Establishes the connexion to the database.
         $this->connection = new Connection($credentials);
     }
 
-    /** Checks if a table exist or not in the database.
-     * @param string|null $table table name
-     * @return bool true if table exists in database.
-     * @throws InvalidArgumentException
-     */
+    // Checks if a table exist or not in the database.
     function TableExists(?string $table = NULL): bool
     {
         if (!isset($table) or $table == "") {
@@ -58,15 +47,9 @@ class Database
         return count($qry->fetchAll()) > 0;
     }
 
-    /** Selects all records from a table.
-     // Todo : Limit and offset !
-     // Todo : Factoring where and param binds ?
-     * @param array|string|null $columns .targetted columns to retrieve
-     * @param string|null $table .table name
-     * @param array|null|string $where where clause conditions
-     * @return array retrieved values from the database
-     * @throws DatabaseFormatException
-     */
+    // Selects all records from a table.
+    // Todo : Limit and offset !
+    // Todo : Factoring where and param binds ?
     function SelectRecord($columns, ?string $table=NULL, $where=NULL) : array
     {
         if (!$this->TableExists($table)) {
@@ -114,7 +97,7 @@ class Database
      * @throws InvalidArgumentException raised if table doesn't exist.
      * @return string|false last inserted ID if exists, false otherwise.
      */
-    function AddRecord(string $table, array $record=NULL)
+    function AddRecord(string $table, array $record=NULL): false|string
     {
         if (!$this->TableExists($table)) {
             $db = $this->connection->dbname;
@@ -178,14 +161,8 @@ class Database
         return $qry->rowCount();
     }
 
-    /** Updates records from a table
-     // Todo : Factoring where and param binds ?
-     * @param string $table
-     * @param array|null $record associative array for values to be inserted.
-     * @param array|null|string $where where clause conditions
-     * @return int
-     * @throws DatabaseFormatException
-     */
+    // Updates records from a table
+    // Todo : Factoring where and param binds ?
     function UpdateRecord(string $table, ?array $record, $where): int
     {
         if (!$this->TableExists($table)) {
@@ -221,17 +198,10 @@ class Database
         return $qry->rowCount();
     }
 
-    /** String builder for where clause with comparison operators.
-     * // Todo : Is an absolute unit of a function.
-     * // Todo : Maybe possible to convert to a query builder ?
-     * // Todo : Implement "NOT" operator.
-     * @param $val1 .first value of the comparison or aggregation
-     * @param $operator .operator, either of comparison or of aggregation
-     * @param $val2 .second value of the comparison or aggregation
-     * @param ?string $val3 only used for "BETWEEN" operator as the value after the "and".
-     * @return array returns an array with the formatted string and the associated values
-     * @throws DatabaseFormatException
-     */
+     // String builder for where clause with comparison operators.
+     // Todo : Is an absolute unit of a function.
+     // Todo : Maybe possible to convert to a query builder ?
+     // Todo : Implement "NOT" operator.
     static function WhereComparison($val1, $operator, $val2, string $val3=NULL): array
     {
         // Structure which will carry the string result and its associated values
@@ -300,16 +270,11 @@ class Database
     }
 
 
-    /** Global String builder for where clause
-     * // Todo : Is also an absolute unit of a function.
-     * // Todo : Maybe possible to convert to a query builder ?
-     * // Todo : Implement "NOT" operator.
-     * // Todo : Separate the conditionArr like in WhereComparison?
-     * @param $conditionArr .array to be formatted
-     * @param bool $is_nested if true, string will be placed in parenthesis.
-     * @return array returns an array with the formatted string and the associated values
-     * @throws DatabaseFormatException
-     */
+    // Global String builder for where clause
+    // Todo : Is also an absolute unit of a function.
+    // Todo : Maybe possible to convert to a query builder ?
+    // Todo : Implement "NOT" operator.
+    // Todo : Separate the conditionArr like in WhereComparison?
     static function WhereClause($conditionArr, bool $is_nested=false): array
     {
         // Structure which will carry the string result and its associated values

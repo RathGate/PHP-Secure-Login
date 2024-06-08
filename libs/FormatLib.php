@@ -2,18 +2,10 @@
 
 namespace libs;
 
-/** Contains all static functions relative to string and array formatting.
- *
- */
+// Contains all static functions relative to string and array formatting.
 class FormatLib {
 
-    /** Enhanced version of implode, including string format.
-     * https://www.php.net/manual/en/function.sprintf.php
-     * @param array $arr base array to convert to string
-     * @param string $format format used for array values
-     * @param string $sep array value separator
-     * @return string
-     */
+    // Enhanced version of implode, including string format.
     static function FormatImplode(array $arr, string $format="%s", string $sep=", "): string
     {
         $result = "";
@@ -26,12 +18,7 @@ class FormatLib {
         return $result;
     }
 
-    /** Checks if an element (or an array of element) are of a valid type.
-     * @param $tested .element or array of element to check.
-     * @param array $valid_types array of accepted types for $tested value(s).
-     * @param bool $is_array if true, checks the validity of each and every element inside $tested as array.
-     * @return bool
-     */
+    // Checks if an element (or an array of element) are of a valid type.
     static function isValidTypeOnly($tested, bool $is_array=false,array $valid_types=["integer", "string", "double"]): bool
     {
         // If $tested not explicitely asserted as array, checks its own type.
@@ -47,23 +34,13 @@ class FormatLib {
         return true;
     }
 
-    /** Enhanced version of implode, including the possibility to have a starting and a finishing character.
-     * @param array $arr base array to convert to string
-     * @param string $start starting character
-     * @param string $end ending character
-     * @param string $sep array values separator
-     * @return string final string
-     */
+    // Enhanced version of implode, including the possibility to have a starting and a finishing character.
     static function SurroundImplode(array $arr, string $start="[", string $end="]", string $sep=", "): string
     {
         return "[".implode($sep, $arr)."]";
     }
 
-    /** Converts an array to a valid PDO "insert values" format
-     * ie "username = ?, password = ?, email = ?" etc.
-     * @param array $arr base array to convert to string
-     * @return string final string
-     */
+    // Converts an array to a valid PDO "insert values" format
     static function ArrayToInsertFormat(array $arr): string
     {
         $result = [];

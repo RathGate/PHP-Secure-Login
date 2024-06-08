@@ -4,19 +4,13 @@ namespace api;
 require_once __DIR__."/../autoload.php";
 use libs\ApiLib;
 
-/**
- *
- */
 abstract class Service {
-    protected $allowedVerbs = [];
-    protected $requiredParams = [];
-    protected $optionParams = [];
-    protected $paramValues;
-    protected $method;
+    protected array $allowedVerbs = [];
+    protected array $requiredParams = [];
+    protected array $optionParams = [];
+    protected \stdClass $paramValues;
+    protected string $method;
 
-    /** Class constructor
-     * @param ?array $allowed_verbs all allowed HTTP verbs
-     */
     public function __construct(?array $allowed_verbs=["GET"])
     {
         // Puts allowed verbs and HTTP methods to uppercase to avoid errors :
@@ -29,38 +23,29 @@ abstract class Service {
         }
 
         // Retrieves, sets and checks parameters :
-        $this::SetParameters();
-        // Todo: séparé de SetParameters mais peut certainement être factorisé en une fonction,
-        // Todo: mais je ne pense pas savoir comment faire.
+        $this->SetParameters();
         $this->CheckParameters();
 
         // Launches the execution of the service itself.
         $this->Trig();
     }
 
-    /** Main body of execution of the service. Can be overwritten to fit needs.
-     * By default, will call the class method associated to the HTTP method used.
-     * @return void
-     */
-    public function Trig() {
+    // Main body of execution of the service. Can be overwritten to fit needs.
+    // By default, will call the class method associated to the HTTP method used.
+    public function Trig(): void
+    {
         $fct = $this->method;
         $this->$fct();
     }
 
-    /** Checks the validity of the current HTTP method.
-     * @return bool true if the current HTTP method is among the valid_methods.
-     */
+    // Checks the validity of the current HTTP method.
     public function IsValidMethod(): bool
     {
         return in_array($this->method, $this->allowedVerbs);
     }
 
-    // Enregistre les paramètres dans l'object $this->params.
-
-    /** Sets the requested and optionnal parameters of the request in paramValues.
-     * @return void
-     */
-    public function SetParameters(): void {
+    // Sets the requested and optionnal parameters of the request in paramValues.
+    protected function SetParameters(): void {
         // Creates the object for the parameter values :
         $this->paramValues = new \stdClass();
         // If no required/optional parameters, assigns an empty array to the
@@ -82,63 +67,54 @@ abstract class Service {
                 $rawParamValues = $_GET;
         }
 
-        // Todo : refactor this. ASAP.
-        // Required parameters :
-        foreach ($this->requiredParams[$this->method] as $param) {
-            if (!isset($rawParamValues[$param])) {
-                ApiLib::WriteErrorResponse(400, "Paramètre obligatoire `".$param."` manquant.");
-            }
-            try {
-                $this->paramValues->$param = json_decode($rawParamValues[$param], true, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
-                ApiLib::WriteErrorResponse(400, "Syntax Error: could not parse parameter `".$param."` [expecting JSON format].");
-                return;
-            }
-        }
-        // Optional parameters :
-        foreach ($this->optionParams[$this->method] as $param) {
-            if (isset($rawParamValues[$param])) {
-                try {
-                    $this->paramValues->$param = json_decode($rawParamValues[$param], true, 512, JSON_THROW_ON_ERROR);
-                } catch (\JsonException $e) {
-                    ApiLib::WriteErrorResponse(400, "Syntax Error: could not parse parameter `".$param."` [expecting JSON format].");
+
+        foreach ([$this->requiredParams, $this->optionParams] as $group) {
+            foreach ($group[$this->method] as $param) {
+                // Checks if required parameter exists
+                if ($group == $this->requiredParams && !isset($rawParamValues[$param])) {
+                    ApiLib::WriteErrorResponse(400, "Paramètre obligatoire `" . $param . "` manquant.");
                     return;
                 }
-            } else {
-                $this->paramValues->$param = "";
+
+                // Registers parameter
+                if (isset($rawParamValues[$param])) {
+                    $this->paramValues->$param = $rawParamValues[$param];
+//                    try {
+//                        $this->paramValues->$param = json_decode($rawParamValues[$param], true, 512, JSON_THROW_ON_ERROR);
+//                    } catch (\JsonException $e) {
+//                        ApiLib::WriteErrorResponse(400, "Syntax Error: could not parse parameter `".$param."` [expecting JSON format].");
+//                        return;
+//                    }
+                } else {
+                    $this->paramValues->$param = "";
+                }
             }
         }
     }
 
-    /** Function to be implemented in child classes if there's need for further parameter
-     * verification after they have been set.
-     * @return mixed
-     */
-    public abstract function CheckParameters();
+    // Additionnal parameter check
+    protected abstract function CheckParameters();
 
-    /** Main body of the service for GET HTTP method.
-     * @return mixed
-     */
-    public abstract function GET();
-
-    /** Main body of the service for POST HTTP method.
-     * @return mixed
-     */
-    public abstract function POST();
-
-    /** Main body of the service for PUT HTTP method.
-     * @return mixed
-     */
-    public abstract function PUT();
-
-    /** Main body of the service for DELETE HTTP method.
-     * @return mixed
-     */
-    public abstract function DELETE();
-
-    /** Main body of the service for PATCH HTTP method.
-     * @return mixed
-     */
-    public abstract function PATCH();
+    // HTTP Methods
+    public function GET(): void
+    {
+        ApiLib::WriteErrorResponse(405, "Method GET is not allowed.");
+    }
+    public function POST(): void
+    {
+        ApiLib::WriteErrorResponse(405, "Method POST is not allowed.");
+    }
+    public function PUT(): void
+    {
+        ApiLib::WriteErrorResponse(405, "Method PUT is not allowed.");
+    }
+    public function DELETE(): void
+    {
+        ApiLib::WriteErrorResponse(405, "Method DELETE is not allowed.");
+    }
+    public function PATCH(): void
+    {
+        ApiLib::WriteErrorResponse(405, "Method PATCH is not allowed.");
+    }
 }
 
