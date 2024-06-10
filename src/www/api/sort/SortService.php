@@ -48,9 +48,13 @@ class SortService extends Service {
         ApiLib::WriteResponse(array("sort_function"=>$this->paramValues->sortFunc, "sorted_arr"=>$sortedArr));
     }
 
-    public function POST(){}
-    public function PUT(){}
-    public function DELETE(){}
-    public function PATCH(){}
+    public function POST(): void
+    {}
+    public function PUT(): void
+    {}
+    public function DELETE(): void
+    {}
+    public function PATCH(): void
+    {}
 
 }
