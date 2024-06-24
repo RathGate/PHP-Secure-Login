@@ -5,7 +5,7 @@ require_once __DIR__."/../../../autoload.php";
 use api\database\DatabaseService;
 use database\DatabaseFormatException;
 use InvalidArgumentException;
-use libs\ApiLib;
+use libs\Api;
 use PDOException;
 
 class DBRecordService extends DatabaseService {
@@ -32,7 +32,7 @@ class DBRecordService extends DatabaseService {
     public function CheckParameters(): void
     {
         if (!$this->database->connection->dbname) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 "No database selected - please check database credential files."
             );
@@ -43,14 +43,14 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $data = $this->database->SelectRecord($this->paramValues->columns, $this->paramValues->table, $this->paramValues->where);
-            ApiLib::WriteResponse($data);
+            Api::WriteResponse($data);
         } catch (InvalidArgumentException|DatabaseFormatException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 $e->getMessage()
             );
         } catch (PDOException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 "PDO Exception - ".$e->getMessage()
             );
@@ -61,16 +61,16 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $last_inserted_id = $this->database->AddRecord($this->paramValues->table, $this->paramValues->values);
-            ApiLib::WriteResponse(
+            Api::WriteResponse(
                 ["last_inserted_id"=>$last_inserted_id]
             );
         } catch (InvalidArgumentException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 $e->getMessage()
             );
         } catch (PDOException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 "PDO Exception - ".$e->getMessage()
             );
@@ -80,16 +80,16 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $affected_rows = $this->database->UpdateRecord($this->paramValues->table, $this->paramValues->values, $this->paramValues->where);
-            ApiLib::WriteResponse(
+            Api::WriteResponse(
                 ["affected_rows"=>$affected_rows]
             );
         } catch (InvalidArgumentException|DatabaseFormatException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 $e->getMessage()
             );
         } catch (PDOException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 "PDO Exception - ".$e->getMessage()
             );
@@ -99,16 +99,16 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $affected_rows = $this->database->DeleteRecord($this->paramValues->table, $this->paramValues->where);
-            ApiLib::WriteResponse(
+            Api::WriteResponse(
                 ["affected_rows"=>$affected_rows]
             );
         } catch (InvalidArgumentException|DatabaseFormatException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 $e->getMessage()
             );
         } catch (PDOException $e) {
-            ApiLib::WriteErrorResponse(
+            Api::WriteErrorResponse(
                 400,
                 "PDO Exception - ".$e->getMessage()
             );

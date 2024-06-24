@@ -3,8 +3,7 @@
 namespace libs;
 
 // Contains all static functions relative to string and array formatting.
-class FormatLib {
-
+class Format {
     // Enhanced version of implode, including string format.
     static function FormatImplode(array $arr, string $format="%s", string $sep=", "): string
     {
@@ -48,5 +47,19 @@ class FormatLib {
             $result[] = "$key = ?";
         }
         return implode(", ", $result);
+    }
+
+    static function IsValidEmail(string $email): bool {
+        return filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
+    static function IsValidPassword(string $password):bool {
+        // Validate password strength
+        $uppercase = preg_match('@[A-Z]@', $password);
+        $lowercase = preg_match('@[a-z]@', $password);
+        $number    = preg_match('@[0-9]@', $password);
+        $specialChars = preg_match('@\W@', $password);
+
+        return ($uppercase && $lowercase && $number && $specialChars && strlen($password) > 8);
     }
 }

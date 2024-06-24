@@ -3,7 +3,7 @@
 namespace libs;
 
 // Contains all static methods relative to the API
-class ApiLib
+class Api
 {
 
     // Write and sends JSON formated error response.

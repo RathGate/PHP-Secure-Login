@@ -7,7 +7,7 @@ use Exception;
 use InvalidArgumentException;
 use PDO;
 use security\Credentials;
-use libs\FormatLib;
+use libs\Format;
 
 // Database manipulation class
 class Database
@@ -64,7 +64,7 @@ class Database
         if (!$columns || $columns == "*" || in_array("*", $columns)) {
             $columns = "*";
         } else {
-            $columns = FormatLib::FormatImplode($columns);
+            $columns = Format::FormatImplode($columns);
         }
 
         // WhereClause clause formatting :
@@ -105,9 +105,9 @@ class Database
         }
 
         // Column name formatting :
-        $cols = FormatLib::FormatImplode(array_keys($record));
+        $cols = Format::FormatImplode(array_keys($record));
         // Values formatting :
-        $vals = FormatLib::FormatImplode(range(0, count($record)-1), ":%s");
+        $vals = Format::FormatImplode(range(0, count($record)-1), ":%s");
 
         // SQL Query :
         $cmd = "INSERT INTO `$table` ($cols) VALUES ($vals);";
@@ -119,6 +119,7 @@ class Database
             $qry->bindValue(":$i", $val);
             $i++;
         }
+        echo $qry->debugDumpParams();
         $qry->execute();
 
         return $this->connection->dbh->lastInsertId();
@@ -171,7 +172,7 @@ class Database
         }
 
         // Columns and values formatting :
-        $vals = FormatLib::ArrayToInsertFormat($record);
+        $vals = Format::ArrayToInsertFormat($record);
 
         // WhereClause clause formatting :
         $clause = Database::WhereClause($where);
@@ -217,7 +218,7 @@ class Database
         // Value check of the operator :
         if (!in_array($operator, Database::$comparison_op)) {
             throw new DatabaseFormatException("Invalid operator `$operator`: supported comparison operators are "
-                .FormatLib::SurroundImplode(Database::$comparison_op, "[", "]", ", "));
+                .Format::SurroundImplode(Database::$comparison_op, "[", "]", ", "));
         }
         // Type check of the $val1 :
         if (!is_string($val1)) {
@@ -229,7 +230,7 @@ class Database
         switch ($operator) {
             case "BETWEEN":
                 // Parameters value check :
-                if (!isset($val2) || !isset($val3) || !FormatLib::isValidTypeOnly($val2) || !FormatLib::isValidTypeOnly($val3)) {
+                if (!isset($val2) || !isset($val3) || !Format::isValidTypeOnly($val2) || !Format::isValidTypeOnly($val3)) {
                     throw new DatabaseFormatException("Invalid parameter format in `$operator` comparison: parameter 3 and 4 must 
                     both be set and of the following types: `string` or `integer/double` (here `".gettype($val2)."` and `".gettype($val3)."`).");
                 }
@@ -240,7 +241,7 @@ class Database
                 break;
             case "IN":
                 // Parameters value check :
-                if (!$val2 || !is_array($val2) || !FormatLib::isValidTypeOnly($val2, true)) {
+                if (!$val2 || !is_array($val2) || !Format::isValidTypeOnly($val2, true)) {
                     $comp = $val2 ? "" : "with no value";
                     throw new DatabaseFormatException("Invalid parameter format in `$operator` comparison: parameter 3 must
                     have a value and be of type `array` (here `".gettype($val2)."` $comp).");
@@ -258,7 +259,7 @@ class Database
                 break;
             default:
                 // Parameters value check :
-                if (!FormatLib::isValidTypeOnly($val2)) {
+                if (!Format::isValidTypeOnly($val2)) {
                     throw new DatabaseFormatException("Invalid parameter format in `$operator` comparison: parameter 3 must
                     have a value of the following types: `string` or `integer/double` (here `".gettype($val2)."`).");
                 }

@@ -2,9 +2,10 @@
 
 namespace api;
 require_once __DIR__."/../autoload.php";
-use libs\ApiLib;
+use libs\Api;
 
 abstract class Service {
+    protected string $serviceName;
     protected array $allowedVerbs = [];
     protected array $requiredParams = [];
     protected array $optionParams = [];
@@ -13,13 +14,16 @@ abstract class Service {
 
     public function __construct(?array $allowed_verbs=["GET"])
     {
+        // Registers service name
+        $this->serviceName = str_replace("Service", "", (substr(strrchr(get_class($this), '\\'), 1)));
+
         // Puts allowed verbs and HTTP methods to uppercase to avoid errors :
         $this->allowedVerbs = array_change_key_case($allowed_verbs ?? [], CASE_UPPER);
         $this->method = strtoupper($_SERVER["REQUEST_METHOD"]);
 
         // Checks if the method of the current request is valid :
         if (!self::IsValidMethod()) {
-            ApiLib::WriteErrorResponse(405, "Method ".$this->method." is not allowed.");
+            Api::WriteErrorResponse(405, "Method ".$this->method." is not allowed.");
         }
 
         // Retrieves, sets and checks parameters :
@@ -72,7 +76,7 @@ abstract class Service {
             foreach ($group[$this->method] as $param) {
                 // Checks if required parameter exists
                 if ($group == $this->requiredParams && !isset($rawParamValues[$param])) {
-                    ApiLib::WriteErrorResponse(400, "Paramètre obligatoire `" . $param . "` manquant.");
+                    Api::WriteErrorResponse(400, "Paramètre obligatoire `" . $param . "` manquant.");
                     return;
                 }
 
@@ -92,7 +96,7 @@ abstract class Service {
         }
     }
 
-    // Additionnal parameter check
+    // Additional parameter check
     protected abstract function CheckParameters();
 
     // HTTP Methods
@@ -100,23 +104,23 @@ abstract class Service {
     // declare its own functions
     public function GET(): void
     {
-        ApiLib::WriteErrorResponse(405, "Method GET is not allowed.");
+        Api::WriteErrorResponse(405, "Method GET is not allowed.");
     }
     public function POST(): void
     {
-        ApiLib::WriteErrorResponse(405, "Method POST is not allowed.");
+        Api::WriteErrorResponse(405, "Method POST is not allowed.");
     }
     public function PUT(): void
     {
-        ApiLib::WriteErrorResponse(405, "Method PUT is not allowed.");
+        Api::WriteErrorResponse(405, "Method PUT is not allowed.");
     }
     public function DELETE(): void
     {
-        ApiLib::WriteErrorResponse(405, "Method DELETE is not allowed.");
+        Api::WriteErrorResponse(405, "Method DELETE is not allowed.");
     }
     public function PATCH(): void
     {
-        ApiLib::WriteErrorResponse(405, "Method PATCH is not allowed.");
+        Api::WriteErrorResponse(405, "Method PATCH is not allowed.");
     }
 }
 
