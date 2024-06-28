@@ -89,15 +89,13 @@ abstract class Service {
 //                        ApiLib::WriteErrorResponse(400, "Syntax Error: could not parse parameter `".$param."` [expecting JSON format].");
 //                        return;
 //                    }
-                } else {
-                    $this->paramValues->$param = "";
                 }
             }
         }
     }
 
     // Additional parameter check
-    protected abstract function CheckParameters();
+    protected function CheckParameters() {}
 
     // HTTP Methods
     // By default, all of them will return a 405, each service will have to

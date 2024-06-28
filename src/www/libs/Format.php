@@ -3,6 +3,8 @@
 namespace libs;
 
 // Contains all static functions relative to string and array formatting.
+use Cassandra\Date;
+
 class Format {
     // Enhanced version of implode, including string format.
     static function FormatImplode(array $arr, string $format="%s", string $sep=", "): string
@@ -62,4 +64,11 @@ class Format {
 
         return ($uppercase && $lowercase && $number && $specialChars && strlen($password) > 8);
     }
+
+    static function DateToStr(\DateTime $date): string
+    {
+
+        return date_format ($date, 'Y-m-d H:i:s');
+    }
+
 }

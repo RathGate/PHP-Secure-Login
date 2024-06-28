@@ -49,12 +49,11 @@ class SignUpService extends DatabaseService
         $user_uuid = Authenticator::RegisterUserAccount($this->database, $this->paramValues->email, $this->paramValues->password);
         // OTP
         $otp = SecuredActioner::RegisterOTP($this->database, $user_uuid, $this->serviceName);
-
         // Write response
         $message = "Le compte a été crée et un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
         $data = array("warning"=>"// Ceci n'apparaît que dans le mail de confirmation. //");
         $data["otp"] = $otp;
-        // TODO : email verification
+        $data["link"] = "http://localhost/login/?key=".SecuredActioner::GenerateOTPLink($user_uuid, $otp);
         Api::WriteResponse(true, 201, $data, $message, true);
     }
 }

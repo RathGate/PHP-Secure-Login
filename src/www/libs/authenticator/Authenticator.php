@@ -8,8 +8,6 @@ use libs\Format;
 
 class Authenticator
 {
-//    static function GetUserByUUID(Database $db, $user_uuid)
-
     static function RegisterUserAccount(Database $db, $email, $password): string
     {
         $email = strtolower($email);
@@ -25,7 +23,6 @@ class Authenticator
         }
 
         $temp_user_uuid = $db->SelectRecord(["uuid"], "temp_users", array("id", "=", $temp_user_id))[0]["uuid"] ?? null;
-        echo $temp_user_uuid;
 
         try {
             $db->AddRecord("user_info", array("user_uuid" => $temp_user_uuid, "email" => $email));
@@ -35,8 +32,6 @@ class Authenticator
         }
         return $temp_user_uuid;
     }
-
-//    static function GetUserByUUID
 
     static function VerifyUserAccount(Database $db, string $user_uuid)
     {
@@ -64,9 +59,6 @@ class Authenticator
 
     static function GetUserInfoByEmail(Database $db, $email) {
         return $db->SelectRecord("*", "user_info", array("email", "=", $email))[0] ?? null;
-    }
-    static function GetUserAccount($db, $filters=[]) {
-        $db->SelectRecord("*", "temp_users");
     }
 
     static function IsVerifiedUserAccount($db, $user_uuid) {
