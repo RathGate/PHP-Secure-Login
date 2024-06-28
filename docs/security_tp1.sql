@@ -21,6 +21,9 @@ SET time_zone = "+00:00";
 -- Base de données : `security_tp1`
 --
 
+CREATE DATABASE `security_tp1_temp`;
+USE `security_tp1_temp`;
+
 -- --------------------------------------------------------
 
 --

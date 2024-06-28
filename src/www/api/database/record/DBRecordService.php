@@ -43,7 +43,7 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $data = $this->database->SelectRecord($this->paramValues->columns, $this->paramValues->table, $this->paramValues->where);
-            Api::WriteResponse($data);
+            Api::WriteSuccessResponse($data);
         } catch (InvalidArgumentException|DatabaseFormatException $e) {
             Api::WriteErrorResponse(
                 400,
@@ -61,7 +61,7 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $last_inserted_id = $this->database->AddRecord($this->paramValues->table, $this->paramValues->values);
-            Api::WriteResponse(
+            Api::WriteSuccessResponse(
                 ["last_inserted_id"=>$last_inserted_id]
             );
         } catch (InvalidArgumentException $e) {
@@ -80,7 +80,7 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $affected_rows = $this->database->UpdateRecord($this->paramValues->table, $this->paramValues->values, $this->paramValues->where);
-            Api::WriteResponse(
+            Api::WriteSuccessResponse(
                 ["affected_rows"=>$affected_rows]
             );
         } catch (InvalidArgumentException|DatabaseFormatException $e) {
@@ -99,7 +99,7 @@ class DBRecordService extends DatabaseService {
     {
         try {
             $affected_rows = $this->database->DeleteRecord($this->paramValues->table, $this->paramValues->where);
-            Api::WriteResponse(
+            Api::WriteSuccessResponse(
                 ["affected_rows"=>$affected_rows]
             );
         } catch (InvalidArgumentException|DatabaseFormatException $e) {

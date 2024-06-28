@@ -60,8 +60,9 @@ class Database
         // Column name formatting :
         if ($columns && !is_array($columns) && $columns != "*") {
             throw new Exception("Invalid column parameter");
+
         }
-        if (!$columns || $columns == "*" || in_array("*", $columns)) {
+        else if (!$columns || $columns == "*" || in_array("*", $columns)) {
             $columns = "*";
         } else {
             $columns = Format::FormatImplode($columns);
@@ -86,7 +87,6 @@ class Database
             }
         }
         $qry->execute();
-        // TODO : remove
         return $qry->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -119,7 +119,6 @@ class Database
             $qry->bindValue(":$i", $val);
             $i++;
         }
-        echo $qry->debugDumpParams();
         $qry->execute();
 
         return $this->connection->dbh->lastInsertId();
@@ -327,5 +326,15 @@ class Database
         return Database::WhereComparison($val1, $operator, $val2, $val3);
     }
 
+    // TODO : Attention : Cette méthode ne sert à remplacer les fonctionnalités avancées et manquantes du DAL.
+    // TODO : Il est fortement conseillé à des fins de sécurité d'utiliser les autres fonctions disponibles si possible.
+    function ExecuteQuery(string $cmd, array $values=[]) {
+        // SQL Query :
+        $qry = $this->connection->dbh->prepare($cmd);
+        // Parameter binding and execution :
+        $i = 0;
+        $qry->execute($values);
+        return $qry->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
