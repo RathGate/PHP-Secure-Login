@@ -3,6 +3,7 @@
 namespace libs\authenticator;
 
 use database\Database;
+use libs\authorizer\AThrottleLimiter;
 use libs\Cryptographics;
 use libs\Format;
 
@@ -58,22 +59,32 @@ class Authenticator
             throw $e;
         }
         $db->DeleteRecord("user_accounts_tmp", array("user_uuid", "=", $temp_user["user_uuid"]));
-        return $temp_user["uuid"];
+        return $temp_user["user_uuid"];
     }
 
-    static function GetUserInfoByEmail(Database $db, $email) {
+    static function GetUserByEmail(Database $db, $email) {
         return $db->SelectRecord("*", "users", array("email", "=", $email))[0] ?? null;
+    }
+
+    static function GetUserByUUID(Database $db, $user_uuid) {
+        return $db->SelectRecord("*", "users", array("uuid", "=", $user_uuid))[0] ?? null;
+    }
+
+    static function GetUserRole(Database $db, $role_id) {
+        if (!isset($role_id)) { return null; }
+        return $db->SelectRecord("*", "roles", ["id", "=", $role_id])[0] ?? null;
     }
 
     static function IsVerifiedUserAccount($db, $user_uuid) {
         return isset($db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0]);
     }
+
     static function GetUserAccountByUUID(Database $db, $user_uuid, $table="user_accounts") {
         return $db->SelectRecord("*", $table, array("user_uuid", "=", $user_uuid))[0] ?? null;
     }
 
     static function IsValidPassword(Database $db, $user_uuid, $password, $table="user_accounts"):bool {
-        $user_account = self::GetUserAccountByUUID($db, $user_uuid);
+        $user_account = self::GetUserAccountByUUID($db, $user_uuid,$table);
         if (!isset($user_account)) { return false; }
         return Cryptographics::MatchSecurePassword($password, $user_account["password"], $user_account["salt"], $user_account["stretch"]);
     }
@@ -81,6 +92,7 @@ class Authenticator
     static function ValidatePassword(Database $db, $user_uuid, $password):array {
         $result = array("is_validated" =>false);
         $user_account = self::GetUserAccountByUUID($db, $user_uuid);
+
         if (!isset($user_account)) {
             $result["err"] = "Account does not exist";
             return $result;
@@ -88,7 +100,6 @@ class Authenticator
 
         if (!Cryptographics::MatchSecurePassword($password, $user_account["password"], $user_account["salt"], $user_account["stretch"])) {
             $db->AddRecord("user_connection_attempts", array("user_uuid"=>$user_uuid));
-
 
             $result["err"] = "Password do not match";
             return $result;

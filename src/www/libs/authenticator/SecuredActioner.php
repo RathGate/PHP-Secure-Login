@@ -2,13 +2,14 @@
 
 namespace libs\authenticator;
 
-use api\Service;
 use database\Database;
-use libs\authorizer\JWT;
 use libs\Format;
+use libs\JWT;
 
 class SecuredActioner
 {
+    static int $otp_validity = 300;
+
     static function GetServiceID(Database $db, string $service): int
     {
         $services = $db->SelectRecord(["id"], "webservices", array("name", "=", $service));
@@ -20,7 +21,7 @@ class SecuredActioner
         return bin2hex(random_bytes($byteLength));
     }
 
-    static function RegisterOTP(Database $db, string $userUUID, string $service, int $duration_s = 300)
+    static function RegisterOTP(Database $db, string $userUUID, string $service, int $duration_s = null)
     {
         // Get service ID in database :
         $service_id = self::GetServiceID($db, $service);
@@ -34,10 +35,10 @@ class SecuredActioner
         // Generate duration
         $now = new \DateTime();
         $then = clone $now;
-        $then->add(new \DateInterval("PT" . $duration_s . "S"));
+        $then->add(new \DateInterval("PT" . ($duration_s ?? self::$otp_validity) . "S"));
 
         self::DeleteAllOTP($db, $userUUID);
-        $last_inserted = $db->AddRecord("user_otp", array("otp" => $otp, "user_uuid" => $userUUID, "webservice_id" => $service_id,
+        $db->AddRecord("user_otp", array("otp" => $otp, "user_uuid" => $userUUID, "webservice_id" => $service_id,
             "created_at" => Format::DateToStr($now), "expires_at" => Format::DateToStr($then)));
         return $otp;
     }

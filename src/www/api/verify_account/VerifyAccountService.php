@@ -5,8 +5,6 @@ use api\DatabaseService;
 use libs\Api;
 use libs\authenticator\Authenticator;
 use libs\authenticator\SecuredActioner;
-use libs\authorizer\JWT;
-use libs\Format;
 use libs\templator\MailTemplator;
 
 class VerifyAccountService extends DatabaseService
@@ -15,7 +13,7 @@ class VerifyAccountService extends DatabaseService
     public function __construct($allowed_verbs=["POST"])
     {
         $this->requiredParams = [
-            "GET"=>["email", "key"],
+            "GET"=>["email", "password"],
             "POST"=>["email", "otp"]
         ];
         $this->optionParams = [];
@@ -26,7 +24,7 @@ class VerifyAccountService extends DatabaseService
     protected function CheckParameters(): void
     {
         if (isset($this->paramValues->email) && $this->paramValues->email != "") {
-            $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
+            $this->paramValues->user_uuid = Authenticator::GetUserByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
             // Checks if email exists
             if (!isset($this->paramValues->user_uuid)) {
                 Api::WriteErrorResponse(401, "Aucun compte n'a été trouvé pour l'adresse mail fournie.");
@@ -41,12 +39,19 @@ class VerifyAccountService extends DatabaseService
 
     public function GET(): void
     {
-        if (!isset($this->paramValues->email) && !isset($this->paramValues->key)) {
+        if (!isset($this->paramValues->email) && !isset($this->paramValues->password)) {
             Api::WriteErrorResponse(404, null);
         }
 
+        echo $this->paramValues->email;
+        echo $this->paramValues->password;
+
+        if (!Authenticator::IsValidPassword($this->database,$this->paramValues->user_uuid, $this->paramValues->password, "user_accounts_tmp")) {
+            Api::WriteErrorResponse(401, "L'email ou le mot de passe fourni est incorrect");
+        }
+
         // OTP
-        $otp = SecuredActioner::RegisterOTP($this->database,  $this->paramValues->user_uuid, $this->serviceName);
+        $otp = SecuredActioner::RegisterOTP($this->database,  $this->paramValues->user_uuid, "SignUp");
 
         // Write response
         $message = "Un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
@@ -59,6 +64,8 @@ class VerifyAccountService extends DatabaseService
         if (!$otp_validation["is_validated"]) {
             Api::WriteErrorResponse(401, $otp_validation["err"]);
         }
+
         Authenticator::VerifyUserAccount($this->database, $this->paramValues->user_uuid);
+        Api::WriteResponse(true, 201, null, "Le compte a été vérifié avec succès");
     }
 }

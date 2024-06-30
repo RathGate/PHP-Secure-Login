@@ -3,6 +3,7 @@
 namespace api;
 require_once __DIR__."/../autoload.php";
 use libs\Api;
+use libs\authorizer\ThrottleLimiter;
 
 abstract class Service {
     protected string $serviceName;
@@ -81,15 +82,7 @@ abstract class Service {
                 }
 
                 // Registers parameter
-                if (isset($rawParamValues[$param])) {
-                    $this->paramValues->$param = $rawParamValues[$param];
-//                    try {
-//                        $this->paramValues->$param = json_decode($rawParamValues[$param], true, 512, JSON_THROW_ON_ERROR);
-//                    } catch (\JsonException $e) {
-//                        ApiLib::WriteErrorResponse(400, "Syntax Error: could not parse parameter `".$param."` [expecting JSON format].");
-//                        return;
-//                    }
-                }
+                if (isset($rawParamValues[$param])) { $this->paramValues->$param = $rawParamValues[$param]; }
             }
         }
     }

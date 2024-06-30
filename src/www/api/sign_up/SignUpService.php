@@ -36,7 +36,7 @@ class SignUpService extends DatabaseService
     public function POST(): void
     {
         // Check if user exists :
-        $user = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email);
+        $user = Authenticator::GetUserByEmail($this->database, $this->paramValues->email);
         if (isset($user)) {
             // Check if awaiting verification :
             if (Authenticator::IsVerifiedUserAccount($this->database, $user["uuid"])) {

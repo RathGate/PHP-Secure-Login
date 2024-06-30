@@ -5,9 +5,9 @@ require_once __DIR__."/../autoload.php";
 
 use Exception;
 use InvalidArgumentException;
-use PDO;
-use security\Credentials;
 use libs\Format;
+use libs\security\Credentials;
+use PDO;
 
 // Database manipulation class
 class Database

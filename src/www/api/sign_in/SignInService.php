@@ -4,6 +4,7 @@ require_once __DIR__."/../../autoload.php";
 use api\DatabaseService;
 use libs\Api;
 use libs\authenticator\Authenticator;
+use libs\authorizer\LoginAttemptsLimiter;
 use libs\authorizer\Tokenizer;
 
 
@@ -13,6 +14,7 @@ class SignInService extends DatabaseService
     public function __construct($allowed_verbs=["POST"])
     {
         $this->requiredParams = [
+            "GET"=>["email"],
             "POST"=>["email", "password"]
         ];
         $this->optionParams = [];
@@ -21,7 +23,7 @@ class SignInService extends DatabaseService
 
     public function CheckParameters(): void
     {
-        $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
+        $this->paramValues->user_uuid = Authenticator::GetUserByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
         // Checks if email exists
         if (!isset($this->paramValues->user_uuid)) {
             Api::WriteErrorResponse(401, "Aucun compte n'a été trouvé pour l'adresse mail fournie.");
@@ -35,8 +37,17 @@ class SignInService extends DatabaseService
 
     public function POST(): void
     {
-        $authentication = Authenticator::ValidatePassword($this->database, $this->paramValues->user_uuid, $this->paramValues->password);
+        $limiter = new LoginAttemptsLimiter($this->database, $this->paramValues->user_uuid);
+
+        if($limiter->HasReachedLimit()) {
+            Api::WriteErrorResponse(401, "Limite de tentatives de connexion atteinte ; veuillez réessayer plus tard");
+        };
+
+        $authentication = Authenticator::ValidatePassword($this->database, $this->paramValues->user_uuid, $this->paramValues->password, $limiter);
         if (!$authentication["is_validated"]) {
+            if($limiter->HasReachedLimit()) {
+                Api::WriteErrorResponse(401, "Limite de tentatives de connexion atteinte ; veuillez réessayer plus tard");
+            };
             Api::WriteErrorResponse(401, "L'email ou le mot de passe ne sont pas corrects");
             return;
         }

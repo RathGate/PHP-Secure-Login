@@ -24,14 +24,9 @@ class ModifyPasswordService extends DatabaseService
 
     public function CheckParameters(): void
     {
-        $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
-
-        // Checks if email exists
-        if (!isset($this->paramValues->user_uuid) ||
-            !Authenticator::IsVerifiedUserAccount($this->database, $this->paramValues->user_uuid)) {
-            Api::WriteErrorResponse(401, "L'email ou le mot de passe fourni est incorrect");
+        if (isset($this->paramValues->email)) {
+            $this->paramValues->user_uuid = Authenticator::GetUserByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
         }
-
     }
 
     public function GET(): void
@@ -62,7 +57,5 @@ class ModifyPasswordService extends DatabaseService
 
         Authenticator::ModifyUserPassword($this->database, $this->paramValues->user_uuid, $this->paramValues->new_password);
         Api::WriteResponse(true, 201, "Mot de passe modifié avec succès");
-
-        // Todo: supprimer les sessions
     }
 }

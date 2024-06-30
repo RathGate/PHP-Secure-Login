@@ -2,11 +2,10 @@
 
 namespace libs\authorizer;
 
-use Cassandra\Date;
 use database\Database;
 use libs\Format;
+use libs\JWT;
 use mysql_xdevapi\Exception;
-use security\Credentials;
 
 class Tokenizer
 {
@@ -31,7 +30,6 @@ class Tokenizer
                 throw new \Exception("Token duration cannot be null or negative");
             }
         }
-
         return (new JWT())->Encode(array_merge($payload, $time));
     }
 
@@ -109,9 +107,10 @@ class Tokenizer
         $exp = Format::DateToStr(((new \DateTime())->add(new \DateInterval(self::$SessionTokenDuration))));
         $val = date_create('@0')->add(new \DateInterval(self::$SessionTokenDuration))->getTimestamp();
 
-        $last_inserted_id = $db->AddRecord("session_tokens", array("user_uuid"=>$user_uuid, "token"=>$token, "created_at"=>$iat,
+        $last_inserted_id = $db->AddRecord("user_sessions", array("user_uuid"=>$user_uuid, "token"=>$token, "created_at"=>$iat,
             "expires_at"=>$exp, "validity"=>$val));
-        $db->DeleteRecord("session_tokens", [["user_uuid", "=", $user_uuid], "AND", ["id", "!=", $last_inserted_id]]);
+        $db->DeleteRecord("user_sessions", [["user_uuid", "=", $user_uuid], "AND", ["id", "!=", $last_inserted_id]]);
+        $db->DeleteRecord("user_connection_attempts", ["user_uuid", "=", $user_uuid]);
 
         return [
             "session_token"=> $token,
@@ -121,23 +120,23 @@ class Tokenizer
     }
 
     static function RevokeSessionToken(Database $db, string $token) {
-        $db->DeleteRecord("session_tokens", ["token", "=", $token]);
+        $db->DeleteRecord("user_sessions", ["token", "=", $token]);
     }
 
     static function RevokeAllUserSessionTokens(Database $db, string $user_uuid=null, string $token=null) {
         if (!isset($user_uuid) && !isset($token)) { return; }
         if (!isset($user_uuid)) {
-            $token_data = self::GetSessionToken($db, $token);
+            $token_data = self::GetUserSession($db, $token);
             if (!isset($token_data)) { return; }
             $user_uuid = $token_data["token_data"]["user_uuid"];
         }
 
-        $db->DeleteRecord("session_tokens", ["user_uuid", "=", $user_uuid]);
+        $db->DeleteRecord("user_sessions", ["user_uuid", "=", $user_uuid]);
     }
 
-    static function GetSessionToken(Database $db, string $token): ?array
+    static function GetUserSession(Database $db, string $token): ?array
     {
-        $token_data = $db->SelectRecord("*", "session_tokens", ["token", "=", $token])[0] ?? null;
+        $token_data = $db->SelectRecord("*", "user_sessions", ["token", "=", $token])[0] ?? null;
         $has_expired = false;
 
         if (!isset($token_data)) { return null; }
@@ -147,7 +146,7 @@ class Tokenizer
         $now = new \DateTime();
         if ($now < $iat || $now > $exp) {
             $has_expired = true;
-            $db->DeleteRecord("session_tokens", ["token", "=", $token]);
+            $db->DeleteRecord("user_sessions", ["token", "=", $token]);
         }
 
         return [

@@ -24,7 +24,7 @@ class DeleteAccountService extends DatabaseService
 
     public function CheckParameters(): void
     {
-        $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
+        $this->paramValues->user_uuid = Authenticator::GetUserByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
 
         // Checks if email exists
         if (!isset($this->paramValues->user_uuid)) {

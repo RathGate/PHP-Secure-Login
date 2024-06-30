@@ -2,7 +2,7 @@
 
 namespace database;
 
-use security\Credentials;
+use libs\security\Credentials;
 
 class Connection
 {

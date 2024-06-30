@@ -1,8 +1,6 @@
 <?php
 
-namespace security;
-
-use stdClass;
+namespace libs\security;
 
 /**
  *

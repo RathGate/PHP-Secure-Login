@@ -1,6 +1,6 @@
 <?php
 
-namespace security;
+namespace libs\security;
 
 /**
  * Class ollowing to easily access files in and out of the server folder with static methods.

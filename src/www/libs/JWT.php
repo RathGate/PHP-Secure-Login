@@ -1,8 +1,8 @@
 <?php
 
-namespace libs\authorizer;
+namespace libs;
 
-use security\Credentials;
+use libs\security\Credentials;
 
 class JWT
 {
