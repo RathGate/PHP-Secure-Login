@@ -35,7 +35,6 @@ Il revient à l'utilisateur de modifier les valeurs d'environnement contenues da
 - Le `body` des requêtes `POST` et `PUT` doit être au format `x-www-form-urlencoded`.
 
 ### Inscription d'un nouvel utilisateur
-<details>
 ```http
   POST /api/sign_up
 ```
