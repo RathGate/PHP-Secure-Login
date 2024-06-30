@@ -26,8 +26,7 @@ class SecuredActioner
         // Get service ID in database :
         $service_id = self::GetServiceID($db, $service);
         if ($service_id < 0) {
-            echo "Service is not existant in database";
-            return null;
+            throw new \InvalidArgumentException("Le service `" . $service . "` n'existe pas.");
         }
 
         // Generate OTP
