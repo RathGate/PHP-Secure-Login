@@ -50,7 +50,7 @@ class SignedInService extends DatabaseService
 
 
         if (isset($this->paramValues->webservice)) {
-            $user_role_level = Authenticator::GetUserRole($this->database, $user["role_id"])["level"] ?? null;
+            $user_role_level = Authenticator::GetUserRole($this->database, $user["role_id"])["permission_level"] ?? null;
             $ws_role_level = $this->paramValues->webservice["permission_level"] ?? null;
 
             echo $user_role_level;
