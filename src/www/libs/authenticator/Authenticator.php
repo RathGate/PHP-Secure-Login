@@ -68,8 +68,14 @@ class Authenticator
     static function IsVerifiedUserAccount($db, $user_uuid) {
         return isset($db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0]);
     }
-    static function GetUserAccountByUUID(Database $db, $user_uuid) {
-        return $db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0] ?? null;
+    static function GetUserAccountByUUID(Database $db, $user_uuid, $table="user_accounts") {
+        return $db->SelectRecord("*", $table, array("user_uuid", "=", $user_uuid))[0] ?? null;
+    }
+
+    static function IsValidPassword(Database $db, $user_uuid, $password, $table="user_accounts"):bool {
+        $user_account = self::GetUserAccountByUUID($db, $user_uuid);
+        if (!isset($user_account)) { return false; }
+        return Cryptographics::MatchSecurePassword($password, $user_account["password"], $user_account["salt"], $user_account["stretch"]);
     }
 
     static function ValidatePassword(Database $db, $user_uuid, $password):array {
@@ -89,5 +95,11 @@ class Authenticator
         }
         $result["is_validated"] = true;
         return $result;
+    }
+
+    static function ModifyUserPassword(Database $db, $user_uuid, $password, $table="user_accounts"): bool
+    {
+        $pwd_info = Cryptographics::GenerateSecurePassword($password);
+        return $db->UpdateRecord($table, $pwd_info, ["user_uuid", "=", $user_uuid]) > 1;
     }
 }

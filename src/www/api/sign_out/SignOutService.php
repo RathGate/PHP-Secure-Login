@@ -7,22 +7,21 @@ use libs\authenticator\Authenticator;
 use libs\authorizer\Tokenizer;
 
 
-class SignOut extends DatabaseService
+class SignOutService extends DatabaseService
 {
     // Surcharge Service.__construct() pour ajouter le traitement spécifique de la requête.
     public function __construct($allowed_verbs)
     {
         $this->optionParams = [
-            "GET"=>["all"]
+            "POST"=>["all"]
         ];
         parent::__construct($allowed_verbs);
     }
 
-    public function GET(): void
+    public function POST(): void
     {
         // Retrieve token
         $token = Tokenizer::RetrieveAuthorizationToken();
-        echo $token;
         if (!isset($token)) {
             Api::WriteSuccessResponse(null);
         }

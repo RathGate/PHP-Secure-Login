@@ -7,7 +7,7 @@ use libs\authenticator\Authenticator;
 use libs\authorizer\Tokenizer;
 
 
-class SignIn extends DatabaseService
+class SignInService extends DatabaseService
 {
     // Surcharge Service.__construct() pour ajouter le traitement spécifique de la requête.
     public function __construct($allowed_verbs=["POST"])

@@ -1,12 +1,13 @@
 <?php
 
 namespace api\verify_account;
-use api\database\DatabaseService;
+use api\DatabaseService;
 use libs\Api;
 use libs\authenticator\Authenticator;
 use libs\authenticator\SecuredActioner;
 use libs\authorizer\JWT;
 use libs\Format;
+use libs\templator\MailTemplator;
 
 class VerifyAccountService extends DatabaseService
 {
@@ -14,7 +15,7 @@ class VerifyAccountService extends DatabaseService
     public function __construct($allowed_verbs=["POST"])
     {
         $this->requiredParams = [
-            "GET"=>["email"],
+            "GET"=>["email", "key"],
             "POST"=>["email", "otp"]
         ];
         $this->optionParams = [];
@@ -40,12 +41,17 @@ class VerifyAccountService extends DatabaseService
 
     public function GET(): void
     {
-        $otp = SecuredActioner::RegisterOTP($this->database, $this->paramValues->user_uuid, "SignUp");
+        if (!isset($this->paramValues->email) && !isset($this->paramValues->key)) {
+            Api::WriteErrorResponse(404, null);
+        }
 
+        // OTP
+        $otp = SecuredActioner::RegisterOTP($this->database,  $this->paramValues->user_uuid, $this->serviceName);
+
+        // Write response
         $message = "Un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
-        $data = array("warning"=>"// Ceci n'apparaît que dans le mail de confirmation. //");
-        $data["otp"] = $otp;
-        Api::WriteResponse(true, 201, $data, $message, true);
+        $mail = (MailTemplator::GenerateAccountVerificationEmail($this->paramValues->email, $otp));
+        Api::WriteResponse(true, 201, $mail, $message, true);
     }
 
     public function POST():void {

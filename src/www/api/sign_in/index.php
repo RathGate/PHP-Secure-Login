@@ -1,6 +1,6 @@
 <?php
 
 require_once __DIR__."/../../autoload.php";
-use api\sign_in\SignIn;
+use api\sign_in\SignInService;
 
-new SignIn(["POST"]);
+new SignInService(["POST"]);
