@@ -11,7 +11,7 @@ class MailTemplator
 
     static function GenerateAccountVerificationEmail(string $user_email, $otp): array
     {
-        $link = "http://localhost/login/verify_account/?key=".SecuredActioner::GenerateOTPLink($user_email, $otp);
+//        $link = "http://localhost/login/verify_account/?key=".SecuredActioner::GenerateOTPLink($user_email, $otp);
         $subject = "Vérification de votre adresse mail";
         $content = [
             "Vous devez vérifier votre adresse mail pour compléter votre inscription à <b>".self::$website."</b><br />".
@@ -31,7 +31,6 @@ class MailTemplator
 
     static function GenerateOTPVerificationEmail(string $user_email, $otp): array
     {
-        $link = "http://localhost/login/verify_account/?key=".SecuredActioner::GenerateOTPLink($user_email, $otp);
         $subject = "Code de vérification : ".$otp;
         $content = [
             "Une action sécurisée a été réalisée sur votre compte, nécessitant un code de vérification.<br />".

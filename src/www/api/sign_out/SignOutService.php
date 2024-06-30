@@ -20,17 +20,23 @@ class SignOutService extends DatabaseService
 
     public function POST(): void
     {
-        // Retrieve token
+        // Retrieves token
+        // Todo : Implement it in Service constructor ?
         $token = Tokenizer::RetrieveAuthorizationToken();
+
+        // If no token, nothing to do
         if (!isset($token)) {
             Api::WriteSuccessResponse(null);
         }
 
+        // Revokes current or all tokens
         if (isset($this->paramValues->all)) {
             Tokenizer::RevokeAllUserSessionTokens($this->database, null, $token);
         } else {
             Tokenizer::RevokeSessionToken($this->database, $token);
         }
+
+        // Sends response
         Api::WriteSuccessResponse(null);
     }
 }

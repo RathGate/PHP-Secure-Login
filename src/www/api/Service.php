@@ -31,6 +31,8 @@ abstract class Service {
         $this->SetParameters();
         $this->CheckParameters();
 
+        // Todo: Retrieve, check header bearer token and check permissions to access service
+
         // Launches the execution of the service itself.
         $this->Trig();
     }

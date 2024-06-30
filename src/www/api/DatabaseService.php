@@ -14,9 +14,14 @@ abstract class DatabaseService extends Service
         try {
             $this->database = new Database();
         } catch (PDOException $e) {
-            Api::WriteErrorResponse(500, "Database error : could not establish connection to database.");
+            Api::WriteErrorResponse(500, "Impossible d'établir la connexion avec la base de données.");
         }
-        // Parent constructor
-        parent::__construct($allowed_verbs);
+
+        // PDO Shenanigans
+        try {
+            parent::__construct($allowed_verbs);
+        } catch (PDOException $e) {
+            Api::WriteErrorResponse(500, "Une erreur serveur est survenue.");
+        }
     }
 }

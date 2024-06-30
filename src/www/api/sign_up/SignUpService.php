@@ -47,12 +47,12 @@ class SignUpService extends DatabaseService
             return;
         }
 
-        // Register new user :
+        // Registers new user
         $user_uuid = Authenticator::RegisterUserAccount($this->database, $this->paramValues->email, $this->paramValues->password);
         // OTP
         $otp = SecuredActioner::RegisterOTP($this->database, $user_uuid, $this->serviceName);
 
-        // Write response
+        // Writes response
         $message = "Le compte a été crée et un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
         $mail = MailTemplator::GenerateAccountVerificationEmail($this->paramValues->email, $otp);
         Api::WriteResponse(true, 201, $mail, $message);

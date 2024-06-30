@@ -13,7 +13,6 @@ class Authenticator
     {
         // Sanitize email
         $email = strtolower($email);
-
         // Check formats for email & password
         if (!Format::IsValidEmail($email) || !Format::IsValidPassword($password)) {
             return -1;
@@ -21,7 +20,6 @@ class Authenticator
 
         // Generate password
         $account_info = Cryptographics::GenerateSecurePassword($password);
-
         try {
             // Add email to `users` table and retrieve created uuid
             $user_id = $db->AddRecord("users", ["email" => $email]);
@@ -31,6 +29,7 @@ class Authenticator
             $account_info["user_uuid"] = $user_uuid;
             $db->AddRecord("user_accounts_tmp", $account_info);
         } catch (\Exception $e) {
+            // If something goes wrong, deletes half-created user
             $db->DeleteRecord("users", array("id", "=", $user_id));
             throw $e;
         }
@@ -42,14 +41,12 @@ class Authenticator
     {
         $is_verified = isset($db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0]);
         if ($is_verified) {
-            echo "User already verified";
-            return;
+            throw new \InvalidArgumentException("L'utilisateur est déjà vérifié");
         }
 
         $temp_user = $db->SelectRecord(["user_uuid", "password", "salt", "stretch"], "user_accounts_tmp", array("user_uuid", "=", $user_uuid))[0] ?? null;
         if (!isset($temp_user) || sizeof($temp_user) == 0) {
-            echo "Wrong user UUID or inexistant user";
-            return;
+            throw new \InvalidArgumentException("L'utilisateur temporaire n'existe pas");
         }
 
         try {
@@ -112,5 +109,10 @@ class Authenticator
     {
         $pwd_info = Cryptographics::GenerateSecurePassword($password);
         return $db->UpdateRecord($table, $pwd_info, ["user_uuid", "=", $user_uuid]) > 1;
+    }
+
+    static function DeleteUser(Database $db, $user_uuid): int
+    {
+        return $db->DeleteRecord("users", ["uuid","=",$user_uuid]);
     }
 }

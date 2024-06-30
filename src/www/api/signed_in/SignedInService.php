@@ -19,6 +19,7 @@ class SignedInService extends DatabaseService
 
     protected function CheckParameters(): void
     {
+        // Retrieves webservice from database
         if (isset($this->paramValues->webservice)) {
             $ws = $this->database->SelectRecord(["*"], "webservices", ["name", "=", $this->paramValues->webservice])[0] ?? null;
 
@@ -31,24 +32,26 @@ class SignedInService extends DatabaseService
 
     public function GET(): void
     {
-        // Retrieve token
+        // Retrieves token
+        // Todo : Implement it in Service constructor
         $token = Tokenizer::RetrieveAuthorizationToken();
         if (!isset($token)) {
             Api::WriteErrorResponse(401, "Aucun token d'authentification n'a été fourni");
         }
 
+        // Retrieves user session from database linked to token
         $token_data = Tokenizer::GetUserSession($this->database, $token);
-        // Check token validity
+        // Checks token validity
         if (!isset($token_data) || $token_data["has_expired"]) {
             Api::WriteErrorResponse(401, "Le token fourni est expiré ou invalide");
         }
         
-        // Check associated user
+        // Checks associated user
+        // Todo: Is this useless since `user_session` references `user`.`uuid` NOT NULL ?
         $user = Authenticator::GetUserByUUID($this->database, $token_data["token_data"]["user_uuid"]);
         if (!isset($user)) { Api::WriteErrorResponse(401, "Aucun compte valide correspondant" ); }
 
-
-
+        // If webservice parameter is set, checks permissions to access it
         if (isset($this->paramValues->webservice)) {
             $user_role_level = Authenticator::GetUserRole($this->database, $user["role_id"])["permission_level"] ?? null;
             $ws_role_level = $this->paramValues->webservice["permission_level"] ?? null;
@@ -59,6 +62,7 @@ class SignedInService extends DatabaseService
             }
         }
 
+        // Writes response
         $data = [
             "token"=> ["session_token"=> $token,"token_type"=> "Bearer"],
             "webservice"=> $this->paramValues->webservice["name"] ?? false];

@@ -7,25 +7,17 @@ namespace libs\security;
  */
 class Credentials
 {
-    /** Name of the service (and therefore name of the file without .json extension)
-     * used to create the credentials.
-     * @var
-     */
+    // Name of the service (and therefore name of the file without .json extension)
+    // used to create the credentials.
     private static $default_service = "database";
     public $service_name;
 
-    /** Class constructor
-     * @param string|null $service_name
-     */
     function __construct(?string $service_name="")
     {
         $this::SetParameters($service_name);
     }
 
-    /**
-     * @param string|null $service_name
-     * @return void
-     */
+
     public function SetParameters(?string $service_name):void {
         // Sets the service name (uses $default_service if none)
         if (!isset($service_name) || $service_name == "") {

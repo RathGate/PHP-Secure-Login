@@ -37,6 +37,7 @@ class SecuredActioner
         $then = clone $now;
         $then->add(new \DateInterval("PT" . ($duration_s ?? self::$otp_validity) . "S"));
 
+        // Delete all OTP associated to user
         self::DeleteAllOTP($db, $userUUID);
         $db->AddRecord("user_otp", array("otp" => $otp, "user_uuid" => $userUUID, "webservice_id" => $service_id,
             "created_at" => Format::DateToStr($now), "expires_at" => Format::DateToStr($then)));
@@ -51,10 +52,11 @@ class SecuredActioner
     {
         $service_id = self::GetServiceID($db, $service);
         if ($service_id < 0) {
-            throw new \Exception("Service `" . $service . "` doesn't exist in database.");
+            throw new \InvalidArgumentException("Le service `" . $service . "` n'existe pas.");
         }
 
         $date = $date ?? Format::DateToStr(new \DateTime());
+        // Todo : Needs to be removed when DAL advanced functions are done
         return $db->ExecuteQuery("SELECT * FROM `user_otp` WHERE `user_uuid` = ? AND `webservice_id` = ? AND ? BETWEEN `created_at` AND `expires_at` ORDER BY `created_at` DESC LIMIT 1;", [$user_uuid, $service_id, $date])[0] ?? null;
     }
 
@@ -62,28 +64,34 @@ class SecuredActioner
         $db->AddRecord("otp_attempts", array("otp_id"=>$otp_id));
     }
 
-    static function ValidateOTP(Database $db, string $otp, string $user_uuid, string $service, bool $DEBUG_prevent_delete=true) {
+    static function ValidateOTP(Database $db, string $otp, string $user_uuid, string $service) {
         $result = array("is_validated" =>false);
         $now = Format::DateToStr(new \DateTime());
 
+        // Retrieves OTP
         $user_otp = self::GetUserOTP($db, $user_uuid, $service, $now);
         if (!isset($user_otp)) {
-            $result["err"] = "No valid OTP has been found for this user and service.";
+            $result["err"] = "Aucun OTP valide n'a été trouvé pour cet utilisateur et ce service";
             return $result;
         }
 
+        // If user try for OTP is not correct :
         if ($otp != $user_otp["otp"]) {
             $attempt_count = sizeof($db->SelectRecord("*", "otp_attempts", array("otp_id", "=", $user_otp["id"])));
-            if ($attempt_count >= $user_otp["max_uses"] && !$DEBUG_prevent_delete) {
+            // If too many attempts, OTP is invalidated
+            if ($attempt_count >= $user_otp["max_uses"]) {
                 self::DeleteAllOTP($db, $user_uuid);
-                $result["err"] = "Too many unsuccessful tries : OTP has been deleted.";
+                $result["err"] = "OTP supprimé après trop de tentatives manquées";
                 return $result;
             }
+
+            // Else, registers OTP attempts
             self::RegisterOTPAttempt($db, $user_otp["id"]);
-            $result["err"] = "OTP value is invalid.";
+            $result["err"] = "OTP invalide";
             return $result;
         }
 
+        // Successful OTP :
         self::DeleteAllOTP($db, $user_uuid);
         $result["is_validated"] = true;
         return $result;

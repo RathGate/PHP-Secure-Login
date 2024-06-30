@@ -16,7 +16,6 @@ class VerifyAccountService extends DatabaseService
             "GET"=>["email", "password"],
             "POST"=>["email", "otp"]
         ];
-        $this->optionParams = [];
 
         parent::__construct($allowed_verbs);
     }
@@ -39,30 +38,30 @@ class VerifyAccountService extends DatabaseService
 
     public function GET(): void
     {
-        if (!isset($this->paramValues->email) && !isset($this->paramValues->password)) {
-            Api::WriteErrorResponse(404, null);
-        }
-
+        // Checks user password
         if (!Authenticator::IsValidPassword($this->database,$this->paramValues->user_uuid, $this->paramValues->password, "user_accounts_tmp")) {
             Api::WriteErrorResponse(401, "L'email ou le mot de passe fourni est incorrect");
         }
 
-        // OTP
+        // Generates OTP for user and service
         $otp = SecuredActioner::RegisterOTP($this->database,  $this->paramValues->user_uuid, "SignUp");
 
-        // Write response
+        // Writes response
         $message = "Un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
         $mail = (MailTemplator::GenerateAccountVerificationEmail($this->paramValues->email, $otp));
         Api::WriteResponse(true, 201, $mail, $message, true);
     }
 
     public function POST():void {
+        // Retrieves and checks OTP
         $otp_validation = SecuredActioner::ValidateOTP($this->database, $this->paramValues->otp, $this->paramValues->user_uuid, "SignUp");
         if (!$otp_validation["is_validated"]) {
             Api::WriteErrorResponse(401, $otp_validation["err"]);
         }
 
+        // Verifies user account
         Authenticator::VerifyUserAccount($this->database, $this->paramValues->user_uuid);
+        // Writes response
         Api::WriteResponse(true, 201, null, "Le compte a été vérifié avec succès");
     }
 }

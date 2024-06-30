@@ -56,6 +56,8 @@ class DeleteAccountService extends DatabaseService
         if (!$otp_validation["is_validated"]) {
             Api::WriteErrorResponse(401, $otp_validation["err"]);
         }
+
+        Authenticator::DeleteUser($this->database, $this->paramValues->user_uuid);
         Api::WriteResponse(true, 201, "Compte et données associées supprimés avec succès");
     }
 }
