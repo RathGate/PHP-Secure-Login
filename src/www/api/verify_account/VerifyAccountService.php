@@ -24,19 +24,8 @@ class VerifyAccountService extends DatabaseService
 
     protected function CheckParameters(): void
     {
-//        if (isset($this->paramValues->key) && $this->paramValues->key != "") {
-//            $jwt = new JWT();
-//            try {
-//                $payload = $jwt->Decode($this->paramValues->key);
-//                $this->paramValues->user_uuid = $payload["user"];
-//                $this->paramValues->otp = $payload["otp"];
-//            } catch (\Exception $e) {
-//                Api::WriteErrorResponse(404, "Lien invalide ou expiré");
-//            }
-//        }
-
         if (isset($this->paramValues->email) && $this->paramValues->email != "") {
-            $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["user_uuid"] ?? null;
+            $this->paramValues->user_uuid = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email)["uuid"] ?? null;
             // Checks if email exists
             if (!isset($this->paramValues->user_uuid)) {
                 Api::WriteErrorResponse(401, "Aucun compte n'a été trouvé pour l'adresse mail fournie.");
@@ -56,24 +45,13 @@ class VerifyAccountService extends DatabaseService
         $message = "Un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
         $data = array("warning"=>"// Ceci n'apparaît que dans le mail de confirmation. //");
         $data["otp"] = $otp;
-//        $data["link"] = "http://localhost/login/api/verify_account/?key=".SecuredActioner::GenerateOTPLink($this->paramValues->user_uuid, $data["otp"]);
         Api::WriteResponse(true, 201, $data, $message, true);
-
-//        if (isset($this->paramValues->email)) {
-//            $message = "Un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
-//            $data = array("warning"=>"// Ceci n'apparaît que dans le mail de confirmation. //");
-//            $data["otp"] = SecuredActioner::RegisterOTP($this->database, $this->paramValues->user_uuid, "SignUp");
-//            $data["link"] = "http://localhost/login/api/verify_account/?key=".SecuredActioner::GenerateOTPLink($this->paramValues->user_uuid, $data["otp"]);
-//            Api::WriteResponse(true, 201, $data, $message, true);
-//        }
-//
-//        Api::WriteErrorResponse(400, "Lien invalide");
     }
 
     public function POST():void {
         $otp_validation = SecuredActioner::ValidateOTP($this->database, $this->paramValues->otp, $this->paramValues->user_uuid, "SignUp");
         if (!$otp_validation["is_validated"]) {
-            Api::WriteErrorResponse(401, !$otp_validation["err"]);
+            Api::WriteErrorResponse(401, $otp_validation["err"]);
         }
         Authenticator::VerifyUserAccount($this->database, $this->paramValues->user_uuid);
     }

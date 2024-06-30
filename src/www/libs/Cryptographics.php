@@ -12,7 +12,7 @@ class Cryptographics
         return base64_encode($salt);
     }
 
-    static function GenerateSecurePassword(string $password="8R7xqbcm!", string $salt=null, int $stretch=1000, int $saltLength=64): array {
+    static function GenerateSecurePassword(string $password, string $salt=null, int $stretch=1000, int $saltLength=64): array {
         $result = [];
         $result["stretch"] = max($stretch, 0);
         $result["salt"] = $salt ?? self::GenerateSalt($saltLength);

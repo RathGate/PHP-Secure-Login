@@ -10,58 +10,84 @@ class Authenticator
 {
     static function RegisterUserAccount(Database $db, $email, $password): string
     {
+        // Sanitize email
         $email = strtolower($email);
+
+        // Check formats for email & password
         if (!Format::IsValidEmail($email) || !Format::IsValidPassword($password)) {
             return -1;
         }
-        $test = Cryptographics::GenerateSecurePassword($password);
-        $temp_user_id = $db->AddRecord("temp_users", $test);
 
-        // TODO : Exception
-        if ($temp_user_id < 0) {
-            return -1;
-        }
-
-        $temp_user_uuid = $db->SelectRecord(["uuid"], "temp_users", array("id", "=", $temp_user_id))[0]["uuid"] ?? null;
+        // Generate password
+        $account_info = Cryptographics::GenerateSecurePassword($password);
 
         try {
-            $db->AddRecord("user_info", array("user_uuid" => $temp_user_uuid, "email" => $email));
-        } catch (\PDOException $e) {
-            $db->DeleteRecord("temp_users", array("uuid", "=", $temp_user_uuid));
+            // Add email to `users` table and retrieve created uuid
+            $user_id = $db->AddRecord("users", ["email" => $email]);
+            $user_uuid = $db->SelectRecord(["uuid"], "users", array("id", "=", $user_id))[0]["uuid"] ?? null;
+
+            // Add password info to `user_accounts_temp`
+            $account_info["user_uuid"] = $user_uuid;
+            $db->AddRecord("user_accounts_tmp", $account_info);
+        } catch (\Exception $e) {
+            $db->DeleteRecord("users", array("id", "=", $user_id));
             throw $e;
         }
-        return $temp_user_uuid;
+
+        return $account_info["user_uuid"];
     }
 
     static function VerifyUserAccount(Database $db, string $user_uuid)
     {
-        $is_verified = isset($db->SelectRecord("*", "users", array("uuid", "=", $user_uuid))[0]);
+        $is_verified = isset($db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0]);
         if ($is_verified) {
             echo "User already verified";
             return;
         }
 
-        $temp_user = $db->SelectRecord(["uuid", "password", "salt", "stretch"], "temp_users", array("uuid", "=", $user_uuid))[0] ?? null;
+        $temp_user = $db->SelectRecord(["user_uuid", "password", "salt", "stretch"], "user_accounts_tmp", array("user_uuid", "=", $user_uuid))[0] ?? null;
         if (!isset($temp_user) || sizeof($temp_user) == 0) {
             echo "Wrong user UUID or inexistant user";
             return;
         }
 
         try {
-            $db->AddRecord("users", $temp_user);
+            $db->AddRecord("user_accounts", $temp_user);
         } catch (\PDOException $e) {
-            $db->DeleteRecord("users", array("uuid", "=", $temp_user["uuid"]));
+            $db->DeleteRecord("user_accounts", array("user_uuid", "=", $temp_user["user_uuid"]));
             throw $e;
         }
-        $db->DeleteRecord("temp_users", array("uuid", "=", $temp_user["uuid"]));
+        $db->DeleteRecord("user_accounts_tmp", array("user_uuid", "=", $temp_user["user_uuid"]));
         return $temp_user["uuid"];
     }
 
     static function GetUserInfoByEmail(Database $db, $email) {
-        return $db->SelectRecord("*", "user_info", array("email", "=", $email))[0] ?? null;
+        return $db->SelectRecord("*", "users", array("email", "=", $email))[0] ?? null;
     }
 
     static function IsVerifiedUserAccount($db, $user_uuid) {
-        return isset($db->SelectRecord("*", "users", array("uuid", "=", $user_uuid))[0]);
+        return isset($db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0]);
+    }
+    static function GetUserAccountByUUID(Database $db, $user_uuid) {
+        return $db->SelectRecord("*", "user_accounts", array("user_uuid", "=", $user_uuid))[0] ?? null;
+    }
+
+    static function ValidatePassword(Database $db, $user_uuid, $password):array {
+        $result = array("is_validated" =>false);
+        $user_account = self::GetUserAccountByUUID($db, $user_uuid);
+        if (!isset($user_account)) {
+            $result["err"] = "Account does not exist";
+            return $result;
+        }
+
+        if (!Cryptographics::MatchSecurePassword($password, $user_account["password"], $user_account["salt"], $user_account["stretch"])) {
+            $db->AddRecord("user_connection_attempts", array("user_uuid"=>$user_uuid));
+
+
+            $result["err"] = "Password do not match";
+            return $result;
+        }
+        $result["is_validated"] = true;
+        return $result;
     }
 }

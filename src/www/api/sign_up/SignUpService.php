@@ -34,10 +34,11 @@ class SignUpService extends DatabaseService
     public function POST(): void
     {
         // Check if user exists :
-        $user_info = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email);
-        if (isset($user_info)) {
+        $user = Authenticator::GetUserInfoByEmail($this->database, $this->paramValues->email);
+        var_dump($user);
+        if (isset($user)) {
             // Check if awaiting verification :
-            if (Authenticator::IsVerifiedUserAccount($this->database, $user_info["user_uuid"])) {
+            if (Authenticator::IsVerifiedUserAccount($this->database, $user["uuid"])) {
                 Api::WriteErrorResponse(409, "Un compte vérifié existe déjà pour cette adresse mail.");
             } else {
                 Api::WriteErrorResponse(409, "Un compte non-vérifié existe déjà pour cette adresse mail.");
@@ -50,6 +51,7 @@ class SignUpService extends DatabaseService
         // OTP
         $otp = SecuredActioner::RegisterOTP($this->database, $user_uuid, $this->serviceName);
         // Write response
+
         $message = "Le compte a été crée et un email de confirmation a été envoyé à l'adresse '".$this->paramValues->email."'.";
         $data = array("warning"=>"// Ceci n'apparaît que dans le mail de confirmation. //");
         $data["otp"] = $otp;

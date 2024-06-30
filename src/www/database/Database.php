@@ -189,7 +189,6 @@ class Database
         // WhereClause parameter binding and execution :
         if (isset($clause["values"]) and count($clause["values"])>0) {
             foreach ($clause["values"] as $val) {
-                echo $val;
                 $qry->bindValue($i, $val);
                 $i++;
             }
