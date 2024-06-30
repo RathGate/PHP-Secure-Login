@@ -47,7 +47,7 @@ Il revient à l'utilisateur de modifier les valeurs d'environnement contenues da
 Si la création de l'utilisateur réussit, un OTP de confirmation du compte est généré et envoyé par mail à l'adresse mail fournie.
 
 <details>
-  <summary>***Exemples***</summary>                                               
+  <summary>### hello</summary>                                               
   test test
 </details>
 
