@@ -43,9 +43,6 @@ class VerifyAccountService extends DatabaseService
             Api::WriteErrorResponse(404, null);
         }
 
-        echo $this->paramValues->email;
-        echo $this->paramValues->password;
-
         if (!Authenticator::IsValidPassword($this->database,$this->paramValues->user_uuid, $this->paramValues->password, "user_accounts_tmp")) {
             Api::WriteErrorResponse(401, "L'email ou le mot de passe fourni est incorrect");
         }

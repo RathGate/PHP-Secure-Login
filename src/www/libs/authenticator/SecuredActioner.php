@@ -68,7 +68,6 @@ class SecuredActioner
 
         $user_otp = self::GetUserOTP($db, $user_uuid, $service, $now);
         if (!isset($user_otp)) {
-            echo "hi";
             $result["err"] = "No valid OTP has been found for this user and service.";
             return $result;
         }

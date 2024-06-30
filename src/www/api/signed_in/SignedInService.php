@@ -53,9 +53,6 @@ class SignedInService extends DatabaseService
             $user_role_level = Authenticator::GetUserRole($this->database, $user["role_id"])["permission_level"] ?? null;
             $ws_role_level = $this->paramValues->webservice["permission_level"] ?? null;
 
-            echo $user_role_level;
-            echo $ws_role_level;
-
             if ((!isset($user_role_level) && isset($ws_role_level)) ||
                 (isset($user_role_level) && isset($ws_role_level) && $user_role_level > $ws_role_level)) {
                  Api::WriteErrorResponse(401, "Permissions insuffisantes" );

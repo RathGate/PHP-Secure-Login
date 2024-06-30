@@ -15,7 +15,7 @@ class ModifyPasswordService extends DatabaseService
     public function __construct($allowed_verbs)
     {
         $this->requiredParams = [
-            "GET"=>["email", "password"],
+            "GET"=>["email"],
             "PUT"=>["email", "new_password", "otp"]
         ];
         $this->optionParams = [];
@@ -31,10 +31,6 @@ class ModifyPasswordService extends DatabaseService
 
     public function GET(): void
     {
-        if (!Authenticator::IsValidPassword($this->database,$this->paramValues->user_uuid, $this->paramValues->password)) {
-            Api::WriteErrorResponse(401, "L'email ou le mot de passe fourni est incorrect");
-        }
-
         $otp = SecuredActioner::RegisterOTP($this->database, $this->paramValues->user_uuid, $this->serviceName);
 
         // Mail
